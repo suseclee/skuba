@@ -272,7 +272,6 @@ func writeKubeadmJoinMasterConf(initConfiguration InitConfiguration) error {
 		updateJoinConfigurationWithCloudIntegration(&joinCfg, initConfiguration)
 	}
 
-    fmt.Printf("%#v\n",initConfiguration)
 	joinCfgContents, err := kubeadmutil.MarshalToYamlForCodecs(&joinCfg, schema.GroupVersion{
 		Group:   "kubeadm.k8s.io",
 		Version: kubeadm.GetKubeadmApisVersion(initConfiguration.KubernetesVersion),

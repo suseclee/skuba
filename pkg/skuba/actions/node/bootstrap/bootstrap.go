@@ -131,7 +131,6 @@ func coreBootstrap(initConfiguration *kubeadmapi.InitConfiguration, bootstrapCon
 	fmt.Println("[bootstrap] applying init configuration to node")
 	err = target.Apply(
 		bootstrapConfiguration,
-		"kubeadm.reset",
 		"kubernetes.bootstrap.upload-secrets",
 		"kernel.load-modules",
 		"kernel.configure-parameters",
