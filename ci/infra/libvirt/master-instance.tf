@@ -8,6 +8,7 @@ data "template_file" "master_repositories" {
   }
 }
 
+
 data "template_file" "master_register_scc" {
   template = file("cloud-init/register-scc.tpl")
   count    = var.caasp_registry_code == "" ? 0 : 1
@@ -72,7 +73,7 @@ resource "libvirt_domain" "master" {
   memory     = var.master_memory
   vcpu       = var.master_vcpu
   cloudinit  = element(libvirt_cloudinit_disk.master.*.id, count.index)
-  depends_on = [libvirt_domain.lb]
+#  depends_on = [libvirt_domain.master]
 
   cpu = {
     mode = "host-passthrough"

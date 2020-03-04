@@ -40,6 +40,7 @@ ${repositories}
 # Code is provided. In this case repositories will be added in runcmd module 
 # with SUSEConnect command after packages module is ran
 #packages:
+#  - haproxy
 
 bootcmd:
   - ip link set dev eth0 mtu 1400

@@ -29,12 +29,3 @@ listen apiserver
   option  httpchk GET /healthz
   ${apiserver_backends}
 
-listen dex
-  bind    *:32000
-  option  httpchk GET /healthz
-  ${dex_backends}
-
-listen gangway
-  bind    *:32001
-  option httpchk GET /
-  ${gangway_backends}
