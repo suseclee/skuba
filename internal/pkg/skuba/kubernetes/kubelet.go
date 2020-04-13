@@ -94,10 +94,14 @@ func disarmKubeletJobName(node *v1.Node) string {
 }
 
 func disarmKubeletJobSpec(node *v1.Node, clusterVersion *version.Version) batchv1.JobSpec {
-	privilegedJob := true
+	privilegedJob := false
 	return batchv1.JobSpec{
 		Template: v1.PodTemplateSpec{
+		//	ObjectMeta: metav1.ObjectMeta{
+                //                Namespace: metav1.NamespaceSystem,
+                //       },
 			Spec: v1.PodSpec{
+		//		ServiceAccountName: "kubelet-disarm",
 				Containers: []v1.Container{
 					{
 						Name:  disarmKubeletJobName(node),
@@ -112,6 +116,7 @@ func disarmKubeletJobSpec(node *v1.Node, clusterVersion *version.Version) batchv
 									"rm -rf /var/lib/etcd/*",
 									"dbus-send --system --print-reply --dest=org.freedesktop.systemd1 /org/freedesktop/systemd1 org.freedesktop.systemd1.Manager.DisableUnitFiles array:string:'kubelet.service' boolean:false",
 									"dbus-send --system --print-reply --dest=org.freedesktop.systemd1 /org/freedesktop/systemd1 org.freedesktop.systemd1.Manager.MaskUnitFiles array:string:'kubelet.service' boolean:false boolean:true",
+									"rm -rf /etc/systemd/system/kubelet.service",
 								},
 								" && ",
 							),
@@ -121,6 +126,7 @@ func disarmKubeletJobSpec(node *v1.Node, clusterVersion *version.Version) batchv
 							VolumeMount("var-lib-kubelet", "/var/lib/kubelet", VolumeMountReadWrite),
 							VolumeMount("var-lib-etcd", "/var/lib/etcd", VolumeMountReadWrite),
 							VolumeMount("var-run-dbus", "/var/run/dbus", VolumeMountReadWrite),
+							VolumeMount("etc-systemd-system", "/etc/systemd/system", VolumeMountReadWrite),
 						},
 						SecurityContext: &v1.SecurityContext{
 							Privileged: &privilegedJob,
@@ -133,6 +139,7 @@ func disarmKubeletJobSpec(node *v1.Node, clusterVersion *version.Version) batchv
 					HostMount("var-lib-kubelet", "/var/lib/kubelet"),
 					HostMount("var-lib-etcd", "/var/lib/etcd"),
 					HostMount("var-run-dbus", "/var/run/dbus"),
+					HostMount("etc-systemd-system", "/etc/systemd/system"),
 				},
 				NodeSelector: map[string]string{
 					"kubernetes.io/hostname": node.ObjectMeta.Name,

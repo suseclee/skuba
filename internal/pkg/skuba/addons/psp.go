@@ -316,5 +316,28 @@ subjects:
 - kind: Group
   apiGroup: rbac.authorization.k8s.io
   name: system:authenticated
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubelet-disarm
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: suse:caasp:psp:kube-disarm
+roleRef:
+  kind: ClusterRole
+  name: suse:caasp:psp:privileged
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: kube-disarm
+  namespace: kube-system
+- apiGroup: rbac.authorization.k8s.io
+  kind: Group
+  name: system:serviceaccounts
+  namespace: kube-system
 `
 )

@@ -89,7 +89,7 @@ var (
 			ComponentContainerVersion: ComponentContainerVersion{
 				Hyperkube: &ContainerImageTag{Name: "hyperkube", Tag: "v1.17.4"},
 				Etcd:      &ContainerImageTag{Name: "etcd", Tag: "3.4.3"},
-				CoreDNS:   &ContainerImageTag{Name: "coredns", Tag: "1.6.5"},
+				CoreDNS:   &ContainerImageTag{Name: "coredns", Tag: "1.6.7"},
 				Pause:     &ContainerImageTag{Name: "pause", Tag: "3.1"},
 				Tooling:   &ContainerImageTag{Name: "skuba-tooling", Tag: "0.1.0"},
 			},
@@ -99,7 +99,7 @@ var (
 				Dex:           &AddonVersion{"2.16.0", 5},
 				Gangway:       &AddonVersion{"3.1.0-rev4", 4},
 				MetricsServer: &AddonVersion{"0.3.6", 0},
-				PSP:           &AddonVersion{"", 2},
+				PSP:           &AddonVersion{"", 3},
 			},
 		},
 		"1.16.2": KubernetesVersion{
