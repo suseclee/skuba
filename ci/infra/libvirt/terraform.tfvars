@@ -4,13 +4,17 @@ pool =  "default"
 image_uri = "SLES15-SP1-JeOS.x86_64-OpenStack-Cloud.qcow2"
 stack_name = "clee"
 network_cidr = "10.17.0.0/22"
-lbs = 0
+
 masters = 1
 workers = 0
 dns_domain = "caasp.local"
 username = "sles"
 password = "linux"
-disk_size = 53687091200
+
+master_vcpu = 4
+master_memory = 16384
+master_disk_size = 22949650969
+
 
 repositories = {
 	caasp_devel = "http://ibs-mirror.prv.suse.net/ibs/Devel:/CaaSP:/4.0/SLE_15_SP1/",

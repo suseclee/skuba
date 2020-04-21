@@ -80,7 +80,7 @@ func Bootstrap(bootstrapConfiguration deployments.BootstrapConfiguration, target
 		ControlPlane:   initConfiguration.ControlPlaneEndpoint,
 		ClusterName:    initConfiguration.ClusterName,
 	}
-	if err := addons.DeployAddons(clientSet, addonConfiguration, addons.SkipRenderIfConfigFilePresent); err != nil {
+	if err := addons.DeployAddons(clientSet, addonConfiguration); err != nil {
 		return err
 	}
 
@@ -131,6 +131,7 @@ func coreBootstrap(initConfiguration *kubeadmapi.InitConfiguration, bootstrapCon
 	fmt.Println("[bootstrap] applying init configuration to node")
 	err = target.Apply(
 		bootstrapConfiguration,
+		"kernel.check-modules",
 		"kubernetes.bootstrap.upload-secrets",
 		"kernel.load-modules",
 		"kernel.configure-parameters",

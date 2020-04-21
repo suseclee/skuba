@@ -139,7 +139,7 @@ func (nviu NodeVersionInfoUpdate) NodeUpgradeableCheck(client clientset.Interfac
 	}
 	if len(errorMessages) > 0 {
 		var errorMessage bytes.Buffer
-		errorMessage.WriteString(fmt.Sprintf("node %s cannot be upgraded yet. The following errors were detected:\n", nviu.Current.Nodename))
+		errorMessage.WriteString(fmt.Sprintf("node %s cannot be upgraded yet. The following errors were detected:\n", nviu.Current.Node.ObjectMeta.Name))
 		for _, error := range errorMessages {
 			errorMessage.WriteString(fmt.Sprintf(" - %s\n", error))
 		}
@@ -177,7 +177,7 @@ func nodesVersionAligned(version *version.Version, allNodesVersioningInfo kubern
 }
 
 func isSchedulableWorkerNode(nodeVersionInfo kubernetes.NodeVersionInfo) bool {
-	return !nodeVersionInfo.Unschedulable && !nodeVersionInfo.IsControlPlane()
+	return !nodeVersionInfo.Unschedulable() && !nodeVersionInfo.IsControlPlane()
 }
 
 func controlPlaneUpdateStatus(currentClusterVersion *version.Version, allNodesVersioningInfo kubernetes.NodeVersionInfoMap, node *v1.Node) (NodeVersionInfoUpdate, error) {
@@ -224,10 +224,11 @@ func controlPlaneUpdateStatusWithAvailableVersions(currentClusterVersion *versio
 	if !nodeVersioningInfo.EqualsClusterVersion(currentClusterVersion) {
 		return NodeVersionInfoUpdate{}, errors.Errorf("cannot infer how to upgrade this node from version %s to version %s", nodeVersioningInfo.String(), currentClusterVersion.String())
 	}
-	// This node is up to date and there are not newer versions available of the platform
+	// This node is up to date and there are not newer versions available of the platform. In any case, return the latest
+	// version components known to our static map in case a patch or metadata version changed.
 	return NodeVersionInfoUpdate{
 		Current: nodeVersioningInfo,
-		Update:  nodeVersioningInfo,
+		Update:  versionInquirer.NodeVersionInfoForClusterVersion(node, currentClusterVersion),
 	}, nil
 }
 
