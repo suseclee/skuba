@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -35,6 +36,7 @@ import (
 	"github.com/SUSE/skuba/internal/pkg/skuba/kubernetes"
 	"github.com/SUSE/skuba/internal/pkg/skuba/node"
 	"github.com/SUSE/skuba/pkg/skuba"
+	skubaconstants "github.com/SUSE/skuba/pkg/skuba"
 )
 
 // Bootstrap initializes the first master node of the cluster
@@ -81,6 +83,11 @@ func Bootstrap(bootstrapConfiguration deployments.BootstrapConfiguration, target
 		ClusterName:    initConfiguration.ClusterName,
 	}
 	if err := addons.DeployAddons(clientSet, addonConfiguration); err != nil {
+		return err
+	}
+	cmd := exec.Command("kubectl", "taint", "--kubeconfig", skubaconstants.KubeConfigAdminFile(), "nodes", "--all", "node-role.kubernetes.io/master-")
+	if combinedOutput, err := cmd.CombinedOutput(); err != nil {
+		fmt.Printf("failed to run kubectl apply: %s", combinedOutput)
 		return err
 	}
 

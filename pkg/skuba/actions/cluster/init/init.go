@@ -275,15 +275,14 @@ func writeKubeadmJoinMasterConf(initConfiguration InitConfiguration) error {
 			},
 		},
 		ControlPlane: &kubeadmapi.JoinControlPlane{},
-        NodeRegistration: kubeadmapi.NodeRegistrationOptions{
-         Taints: []v1.Taint{ }, // enable master node to deploy pods
-	},
+		NodeRegistration: kubeadmapi.NodeRegistrationOptions{
+			Taints: []v1.Taint{}, // enable master node to deploy system pods
+		},
 	}
 
 	if len(initConfiguration.CloudProvider) > 0 {
 		updateJoinConfigurationWithCloudIntegration(&joinCfg, initConfiguration)
 	}
-
 	joinCfgContents, err := kubeadmutil.MarshalToYamlForCodecs(&joinCfg, schema.GroupVersion{
 		Group:   "kubeadm.k8s.io",
 		Version: kubeadm.GetKubeadmApisVersion(initConfiguration.KubernetesVersion),
