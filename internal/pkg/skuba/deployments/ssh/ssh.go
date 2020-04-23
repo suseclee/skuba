@@ -221,17 +221,12 @@ func (t *Target) initClient() error {
 		return errSSHNoKeysErr
 	}
 
-	hostKeyCallback, err := t.hostKeyChecker()
-	if err != nil {
-		return err
-	}
-
 	config := &ssh.ClientConfig{
 		User: t.user,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeysCallback(agentClient.Signers),
 		},
-		HostKeyCallback: hostKeyCallback,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey() ,
 	}
 
 	t.client, err = ssh.Dial("tcp", fmt.Sprintf("%s:%d", t.target.Target, t.port), config)
