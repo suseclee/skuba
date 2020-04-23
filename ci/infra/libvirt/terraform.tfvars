@@ -3,7 +3,8 @@ libvirt_uri = "qemu:///system"
 pool =  "default"
 image_uri = "SLES15-SP1-JeOS.x86_64-OpenStack-Cloud.qcow2"
 stack_name = "clee"
-network_cidr = "10.17.0.0/22"
+#network_cidr = "10.17.0.0/22"
+network_cidr = "192.168.248.0/22"
 
 masters = 1
 workers = 0
