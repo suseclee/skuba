@@ -33,8 +33,7 @@ repositories = {
 packages = [
   "kernel-default",
   "-kernel-default-base",
-  "ca-certificates-suse",
-  "nfs-client"
+  "ca-certificates-suse"
 ]
 
 
