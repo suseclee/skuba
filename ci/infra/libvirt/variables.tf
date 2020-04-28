@@ -3,6 +3,11 @@ variable "libvirt_uri" {
   description = "URL of libvirt connection - default to localhost"
 }
 
+variable "libvirt_keyfile" {
+  default     = ""
+  description = "The private key file used for libvirt connection - default to none"
+}
+
 variable "pool" {
   default     = "default"
   description = "Pool to be used to store all the volumes"
@@ -90,13 +95,14 @@ variable "network_mode" {
   description = "Network mode used by the cluster"
 }
 
-variable "lbs" {
-  default     = 1
-  description = "Number of load-balancer nodes"
+variable "create_lb" {
+  type        = bool
+  default     = true
+  description = "Create load balancer node exposing master nodes"
 }
 
 variable "lb_memory" {
-  default     = 2048
+  default     = 4096
   description = "Amount of RAM for a load balancer node"
 }
 
@@ -129,7 +135,7 @@ variable "masters" {
 }
 
 variable "master_memory" {
-  default     = 2048
+  default     = 4096
   description = "Amount of RAM for a master"
 }
 
@@ -149,7 +155,7 @@ variable "workers" {
 }
 
 variable "worker_memory" {
-  default     = 2048
+  default     = 4096
   description = "Amount of RAM for a worker"
 }
 

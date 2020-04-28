@@ -1,13 +1,15 @@
 
 libvirt_uri = "qemu:///system"
 pool =  "default"
-image_uri = "SLES15-SP1-JeOS.x86_64-OpenStack-Cloud.qcow2"
+image_uri = "SLES15-SP1-JeOS.x86_64-15.1-OpenStack-Cloud-QU1.qcow2"
 stack_name = "clee"
 #network_cidr = "10.17.0.0/22"
 network_cidr = "192.168.0.0/22"
 
+create_lb=false
 masters = 1
 workers = 0
+
 dns_domain = "caasp.local"
 username = "sles"
 password = "linux"

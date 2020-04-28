@@ -1,4 +1,4 @@
-data "template_file" "master_repositories" {
+data "template_file" "worker_repositories" {
   template = file("cloud-init/repository.tpl")
   count    = length(var.repositories)
 
@@ -8,7 +8,7 @@ data "template_file" "master_repositories" {
   }
 }
 
-data "template_file" "master_register_scc" {
+data "template_file" "worker_register_scc" {
   template = file("cloud-init/register-scc.tpl")
   count    = var.caasp_registry_code == "" ? 0 : 1
 
@@ -20,7 +20,7 @@ data "template_file" "master_register_scc" {
   }
 }
 
-data "template_file" "master_register_rmt" {
+data "template_file" "worker_register_rmt" {
   template = file("cloud-init/register-rmt.tpl")
   count    = var.rmt_server_name == "" ? 0 : 1
 
@@ -29,7 +29,7 @@ data "template_file" "master_register_rmt" {
   }
 }
 
-data "template_file" "master_commands" {
+data "template_file" "worker_commands" {
   template = file("cloud-init/commands.tpl")
   count    = join("", var.packages) == "" ? 0 : 1
 
@@ -38,43 +38,43 @@ data "template_file" "master_commands" {
   }
 }
 
-data "template_file" "master-cloud-init" {
+data "template_file" "worker-cloud-init" {
   template = file("cloud-init/common.tpl")
 
   vars = {
     authorized_keys = join("\n", formatlist("  - %s", var.authorized_keys))
-    repositories    = join("\n", data.template_file.master_repositories.*.rendered)
-    register_scc    = join("\n", data.template_file.master_register_scc.*.rendered)
-    register_rmt    = join("\n", data.template_file.master_register_rmt.*.rendered)
-    commands        = join("\n", data.template_file.master_commands.*.rendered)
+    repositories    = join("\n", data.template_file.worker_repositories.*.rendered)
+    register_scc    = join("\n", data.template_file.worker_register_scc.*.rendered)
+    register_rmt    = join("\n", data.template_file.worker_register_rmt.*.rendered)
+    commands        = join("\n", data.template_file.worker_commands.*.rendered)
     username        = var.username
     password        = var.password
     ntp_servers     = join("\n", formatlist("    - %s", var.ntp_servers))
   }
 }
 
-resource "libvirt_volume" "master" {
-  name           = "${var.stack_name}-master-volume-${count.index}"
+resource "libvirt_volume" "worker" {
+  name           = "${var.stack_name}-worker-volume-${count.index}"
   pool           = var.pool
-  size           = var.master_disk_size
+  size           = var.worker_disk_size
   base_volume_id = libvirt_volume.img.id
-  count          = var.masters
+  count          = var.workers
 }
 
-resource "libvirt_cloudinit_disk" "master" {
-  # needed when 0 master nodes are defined
-  count     = var.masters
-  name      = "${var.stack_name}-master-cloudinit-disk-${count.index}"
+resource "libvirt_cloudinit_disk" "worker" {
+  # needed when 0 worker nodes are defined
+  count     = var.workers
+  name      = "${var.stack_name}-worker-cloudinit-disk-${count.index}"
   pool      = var.pool
-  user_data = data.template_file.master-cloud-init.rendered
+  user_data = data.template_file.worker-cloud-init.rendered
 }
 
-resource "libvirt_domain" "master" {
-  count      = var.masters
-  name       = "${var.stack_name}-master-domain-${count.index}"
-  memory     = var.master_memory
-  vcpu       = var.master_vcpu
-  cloudinit  = element(libvirt_cloudinit_disk.master.*.id, count.index)
+resource "libvirt_domain" "worker" {
+  count      = var.workers
+  name       = "${var.stack_name}-worker-domain-${count.index}"
+  memory     = var.worker_memory
+  vcpu       = var.worker_vcpu
+  cloudinit  = element(libvirt_cloudinit_disk.worker.*.id, count.index)
   depends_on = [libvirt_domain.lb]
 
   cpu = {
@@ -82,13 +82,13 @@ resource "libvirt_domain" "master" {
   }
 
   disk {
-    volume_id = element(libvirt_volume.master.*.id, count.index)
+    volume_id = element(libvirt_volume.worker.*.id, count.index)
   }
 
   network_interface {
     network_id     = libvirt_network.network.id
-    hostname       = "${var.stack_name}-master-${count.index}"
-    addresses      = [cidrhost(var.network_cidr, 512 + count.index)]
+    hostname       = "${var.stack_name}-worker-${count.index}"
+    addresses      = [cidrhost(var.network_cidr, 768 + count.index)]
     wait_for_lease = true
   }
 
@@ -98,13 +98,13 @@ resource "libvirt_domain" "master" {
   }
 }
 
-resource "null_resource" "master_wait_cloudinit" {
-  depends_on = [libvirt_domain.master]
-  count      = var.masters
+resource "null_resource" "worker_wait_cloudinit" {
+  depends_on = [libvirt_domain.worker]
+  count      = var.workers
 
   connection {
     host = element(
-      libvirt_domain.master.*.network_interface.0.addresses.0,
+      libvirt_domain.worker.*.network_interface.0.addresses.0,
       count.index,
     )
     user     = var.username
@@ -119,15 +119,15 @@ resource "null_resource" "master_wait_cloudinit" {
   }
 }
 
-resource "null_resource" "master_reboot" {
-  depends_on = [null_resource.master_wait_cloudinit]
-  count      = var.masters
+resource "null_resource" "worker_reboot" {
+  depends_on = [null_resource.worker_wait_cloudinit]
+  count      = var.workers
 
   provisioner "local-exec" {
     environment = {
       user = var.username
       host = element(
-        libvirt_domain.master.*.network_interface.0.addresses.0,
+        libvirt_domain.worker.*.network_interface.0.addresses.0,
         count.index,
       )
     }
